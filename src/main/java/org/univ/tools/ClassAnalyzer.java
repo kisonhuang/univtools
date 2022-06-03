@@ -20,6 +20,8 @@ public class ClassAnalyzer {
 
 	private static final String CLASS_NAMES = "D:\\Workspace\\Workspace_Test\\univ-frame\\src\\main\\resources\\md_2.md";
 
+	private static final String CLASS_PREFIX = "org.springframework";
+
 	private static final List<String> EXCLUDE_CLASS_NAMES = new ArrayList<>();
 
 	static {
@@ -40,16 +42,34 @@ public class ClassAnalyzer {
 	private static void analyseClasses(List<String> classNames) {
 		Map<String, Class<?>> classMap = loadClasses();
 		for (String className : classNames) {
-			Class<?> rootClass = classMap.get(className);
-			if (rootClass.getSuperclass() != null || ArrayUtils.isNotEmpty(rootClass.getInterfaces())) {
-				continue;
+			if (isNeedAnalyse(classMap.get(className))) {
+				System.out.println(String.format("\r\n## %s\r\n\r\n```java", className));
+				ClassNode rootNode = analyseClasses(0, className, classMap);
+				printClasses(rootNode);
+				System.out.println("```");
 			}
-
-			System.out.println("\r\n## \r\n\r\n```java");
-			ClassNode rootNode = analyseClasses(0, className, classMap);
-			printClasses(rootNode);
-			System.out.println("```");
 		}
+	}
+
+	private static boolean isNeedAnalyse(Class<?> currentClass) {
+		if (currentClass == null) {
+			return false;
+		}
+
+		Class<?> superClass = currentClass.getSuperclass();
+		if (superClass != null && superClass.getName().startsWith(CLASS_PREFIX)) {
+			return false;
+		}
+
+		Class<?>[] superInterfaces = currentClass.getInterfaces();
+		if (ArrayUtils.isNotEmpty(superInterfaces)) {
+			for (Class<?> superInterface : superInterfaces) {
+				if (superInterface.getName().startsWith(CLASS_PREFIX)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	private static ClassNode analyseClasses(int level, String className, Map<String, Class<?>> classMap) {

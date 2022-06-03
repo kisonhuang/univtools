@@ -15,12 +15,20 @@ public class ApiPrinter {
 
 	public static final String SOURCE = "D:\\Workspace\\Workspace_Univ\\univdocs\\univdocs\\spring\\spring-framework\\api\\所有类2.md";
 
-	public static final String TARGET = "D:\\Workspace\\Workspace_Univ\\univdocs\\univdocs\\spring\\spring-framework\\api\\beans";
+	public static final String TARGET = "D:\\Workspace\\Workspace_Univ\\univdocs\\univdocs\\spring\\spring-framework\\api\\体系结构.md";
 
 	public static final String PREFIX = "org";
 
 	public static void main(String[] args) {
-		printFiles();
+		printFile();
+	}
+
+	private static void printFile() {
+		Set<String> allLines = new HashSet<>();
+		File file = new File(TARGET);
+		readLines(allLines, file);
+		removeLines(allLines);
+		LineUtils.printLines(allLines);
 	}
 
 	private static void printFiles() {
@@ -42,17 +50,17 @@ public class ApiPrinter {
 		LineUtils.printLines(allLines);
 	}
 
-	private static void readLines(Set<String> allLines, File[] files) {
+	private static void readLines(Set<String> allLines, File... files) {
 		for (File file : files) {
 			try {
 				List<String> lines = FileUtils.readLines(file, StandardCharsets.UTF_8);
 
-				lines.forEach(line -> {
-					if (line.contains(PREFIX)) {
+				for (String line : lines) {
+					if (!line.startsWith("#") && line.contains(PREFIX)) {
 						int endIndex = line.indexOf("<") != -1 ? line.indexOf("<") : line.length();
 						allLines.add(line.substring(0, endIndex).replace("+", "").trim());
 					}
-				});
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
