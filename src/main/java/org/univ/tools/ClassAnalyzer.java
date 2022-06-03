@@ -1,6 +1,7 @@
 package org.univ.tools;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,14 +18,11 @@ public class ClassAnalyzer {
 
 	private static final String CLASS_SOURCE = "D:\\Workspace\\Workspace_Univ\\univdocs\\univdocs\\spring\\spring-framework\\api\\所有类.md";
 
-	private static final List<String> CLASS_NAMES = new ArrayList<>();
+	private static final String CLASS_NAMES = "D:\\Workspace\\Workspace_Test\\univ-frame\\src\\main\\resources\\md_2.md";
 
 	private static final List<String> EXCLUDE_CLASS_NAMES = new ArrayList<>();
 
 	static {
-		CLASS_NAMES.add("org.springframework.beans.TypeConverter");
-		CLASS_NAMES.add("org.springframework.beans.factory.BeanFactory");
-
 		EXCLUDE_CLASS_NAMES.add("org.springframework.transaction.jta.WebSphereUowTransactionManager");
 		EXCLUDE_CLASS_NAMES.add("org.springframework.web.reactive.socket.server.upgrade.Jetty10RequestUpgradeStrategy");
 		EXCLUDE_CLASS_NAMES.add("org.springframework.web.socket.server.jetty.Jetty10RequestUpgradeStrategy");
@@ -33,16 +31,23 @@ public class ClassAnalyzer {
 		EXCLUDE_CLASS_NAMES.add("org.springframework.web.socket.server.standard.WebSphereRequestUpgradeStrategy");
 	}
 
-	public static void main(String[] args) {
-		analyseClasses();
+	public static void main(String[] args) throws IOException {
+		File source = new File(CLASS_NAMES);
+		List<String> classNames = FileUtils.readLines(source, StandardCharsets.UTF_8);
+		analyseClasses(classNames);
 	}
 
-	private static void analyseClasses() {
+	private static void analyseClasses(List<String> classNames) {
 		Map<String, Class<?>> classMap = loadClasses();
-		for (String className : CLASS_NAMES) {
+		for (String className : classNames) {
+			Class<?> rootClass = classMap.get(className);
+			if (rootClass.getSuperclass() != null || ArrayUtils.isNotEmpty(rootClass.getInterfaces())) {
+				continue;
+			}
+
 			System.out.println("\r\n## \r\n\r\n```java");
-			ClassNode classNode = analyseClasses(0, className, classMap);
-			printClasses(classNode);
+			ClassNode rootNode = analyseClasses(0, className, classMap);
+			printClasses(rootNode);
 			System.out.println("```");
 		}
 	}
