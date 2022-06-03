@@ -17,11 +17,14 @@ public class ClassAnalyzer {
 
 	private static final String CLASS_SOURCE = "D:\\Workspace\\Workspace_Univ\\univdocs\\univdocs\\spring\\spring-framework\\api\\所有类.md";
 
-	private static final String CLASS_NAME = "org.springframework.beans.factory.BeanFactory";
+	private static final List<String> CLASS_NAMES = new ArrayList<>();
 
 	private static final List<String> EXCLUDE_CLASS_NAMES = new ArrayList<>();
 
 	static {
+		CLASS_NAMES.add("org.springframework.beans.TypeConverter");
+		CLASS_NAMES.add("org.springframework.beans.factory.BeanFactory");
+
 		EXCLUDE_CLASS_NAMES.add("org.springframework.transaction.jta.WebSphereUowTransactionManager");
 		EXCLUDE_CLASS_NAMES.add("org.springframework.web.reactive.socket.server.upgrade.Jetty10RequestUpgradeStrategy");
 		EXCLUDE_CLASS_NAMES.add("org.springframework.web.socket.server.jetty.Jetty10RequestUpgradeStrategy");
@@ -36,8 +39,12 @@ public class ClassAnalyzer {
 
 	private static void analyseClasses() {
 		Map<String, Class<?>> classMap = loadClasses();
-		ClassNode rootNode = analyseClasses(0, CLASS_NAME, classMap);
-		printClasses(rootNode);
+		for (String className : CLASS_NAMES) {
+			System.out.println("\r\n## \r\n\r\n```java");
+			ClassNode classNode = analyseClasses(0, className, classMap);
+			printClasses(classNode);
+			System.out.println("```");
+		}
 	}
 
 	private static ClassNode analyseClasses(int level, String className, Map<String, Class<?>> classMap) {
