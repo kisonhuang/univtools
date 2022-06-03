@@ -5,7 +5,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -14,9 +13,11 @@ import org.univ.tools.utils.LineUtils;
 
 public class ApiPrinter {
 
-	public static final String PATH = "D:\\Workspace\\Workspace_Univ\\univdocs\\univdocs\\spring\\spring-framework\\api\\核心";
+	public static final String SOURCE = "D:\\Workspace\\Workspace_Univ\\univdocs\\univdocs\\spring\\spring-framework\\api\\所有类2.md";
 
-	public static final String PREFIX = "org.springframework";
+	public static final String TARGET = "D:\\Workspace\\Workspace_Univ\\univdocs\\univdocs\\spring\\spring-framework\\api\\beans";
+
+	public static final String PREFIX = "org";
 
 	public static void main(String[] args) {
 		printFiles();
@@ -24,18 +25,20 @@ public class ApiPrinter {
 
 	private static void printFiles() {
 		Set<String> allLines = new HashSet<>();
-		File[] files = new File(PATH).listFiles(fileFilter());
+		File[] files = new File(TARGET).listFiles(fileFilter());
 		readLines(allLines, files);
+		removeLines(allLines);
 		LineUtils.printLines(allLines);
 	}
 
 	private static void printDirs() {
 		Set<String> allLines = new HashSet<>();
-		File[] dirs = new File(PATH).listFiles(dirFilter());
+		File[] dirs = new File(TARGET).listFiles(dirFilter());
 		for (File dir : dirs) {
 			File[] files = dir.listFiles(fileFilter());
 			readLines(allLines, files);
 		}
+		removeLines(allLines);
 		LineUtils.printLines(allLines);
 	}
 
@@ -46,12 +49,24 @@ public class ApiPrinter {
 
 				lines.forEach(line -> {
 					if (line.contains(PREFIX)) {
-						allLines.add(line.replace("+", "").trim());
+						int endIndex = line.indexOf("<") != -1 ? line.indexOf("<") : line.length();
+						allLines.add(line.substring(0, endIndex).replace("+", "").trim());
 					}
 				});
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	private static void removeLines(Set<String> targetLines) {
+		try {
+			File source = new File(SOURCE);
+			List<String> sourceLines = FileUtils.readLines(source, StandardCharsets.UTF_8);
+			sourceLines.removeAll(targetLines);
+			FileUtils.writeLines(source, sourceLines);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
